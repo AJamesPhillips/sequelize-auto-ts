@@ -354,7 +354,7 @@ export class Field
         if (this.fieldType==='tinyint') {
             raw = (raw==='1') ? 'true' : 'false';
         // This regex will only allow values of 1 or more, this the intended behaviour?
-        // Otherwise I think we'd want /^(?:[0-9])|(?:[1-9][0-9]*)$/
+        // Otherwise I think we'd want /^([0-9]|[1-9][0-9]*)$/
         } else if (_.isString(raw) && !/^[1-9][0-9]*$/.test(raw)) {
             raw = `"${raw}"`;
         }
