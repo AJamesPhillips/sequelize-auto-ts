@@ -243,18 +243,13 @@ export class Field
 {
     public targetIdFieldType:string; // if this is a prefixed foreign key, then the name of the non-prefixed key is here
 
-    constructor(public fieldName:string, public fieldType:string, public columnType:string, public columnDefault:string, public isNullableString:string, public table:Table, public isReference:boolean = false, public isCalculated:boolean = false)
+    constructor(public fieldName:string, public fieldType:string, public columnType:string, public columnDefault:string, public isNullable:boolean, public table:Table, public isReference:boolean = false, public isCalculated:boolean = false)
     {
-
-    }
-
-    isNullable():boolean {
-        return this.isNullableString==='YES';
     }
 
     fieldNameAndIsNullable():string {
         var isNullable:boolean = (
-            this.isNullable() ||
+            this.isNullable ||
             /(_at)|(At)$/.test(this.fieldName) ||
             (!_.isNull(this.columnDefault) && !_.isUndefined(this.columnDefault)) ||
             this.fieldName==='id' ||
@@ -341,7 +336,7 @@ export class Field
             ];
         } else {
             fieldType = this.sequelizeFieldType();
-            if (!this.isNullable() && !/(_at)|(At)$/.test(this.fieldName)) {
+            if (!this.isNullable && !/(_at)|(At)$/.test(this.fieldName)) {
                 fieldType.push('allowNull: false');
             }
             if (!_.isNull(this.columnDefault)) {
@@ -604,7 +599,7 @@ export function read(database:string, username:string, password:string, options:
 
             var isCalculated:boolean = customFieldLookup[row.column_name] !== undefined;
 
-            var field:Field = new Field(row.column_name, row.data_type, row.column_type, row.column_default, row.is_nullable, table, false, isCalculated);
+            var field:Field = new Field(row.column_name, row.data_type, row.column_type, row.column_default, row.is_nullable === 'YES', table, false, isCalculated);
             table.fields.push(field);
 
             if (isCalculated && !calculatedFieldsFound[field.fieldName]) {
