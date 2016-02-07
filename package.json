@@ -1,6 +1,6 @@
 {
     "name": "sequelize-auto-ts",
-    "version": "2.9.1",
+    "version": "2.9.2",
     "author": "Samuel Neff <sam@serndesign.com> https://github.com/samuelneff",
     "description": "Generates Sequelize definition statements and TypeScript interfaces for tables in a database.",
     "keywords": [
@@ -23,7 +23,7 @@
         "mysql": "2.3.2",
         "prompt": "0.2.13",
         "script-template": ">=1.0.0",
-        "sequelize": "^3.14.2"
+        "sequelize": "^3.19.2"
     },
     "devDependencies": {
         "jasmine-node" : "1.14.3"
