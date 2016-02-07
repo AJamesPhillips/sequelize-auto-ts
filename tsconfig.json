@@ -21,9 +21,6 @@
         "!node_modules/**"
     ],
     "files": [
-        "dest/sequelize-models.ts",
-        "dest/sequelize-names.ts",
-        "dest/sequelize-types.ts",
         "examples/mysql-userdemo-generated/sequelize-models.ts",
         "examples/mysql-userdemo-generated/sequelize-types.ts",
         "examples/mysql-userdemo-usage.ts",
