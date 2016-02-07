@@ -223,7 +223,7 @@ export class Table
     idFieldName():string {
         var idField:Field = this.idField();
         if (idField === undefined) {
-            // console.log('Unable to find ID field for type: ' + this.tableName);
+            console.warn('Unable to find ID field for type: ' + this.tableName);
             return '!!cannotFindIdFieldOn' + this.tableName + '!!';
         }
         return idField.fieldName;
@@ -232,7 +232,7 @@ export class Table
     idFieldNameTitleCase():string {
         var idField:Field = this.idField();
         if (idField === undefined) {
-            // console.log('Unable to find ID field for type: ' + this.tableName);
+            console.warn('Unable to find ID field for type: ' + this.tableName);
             return '!!cannotFindIdFieldOn' + this.tableName + '!!';
         }
         return idField.fieldNameProperCase();
