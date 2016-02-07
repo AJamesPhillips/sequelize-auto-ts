@@ -195,7 +195,7 @@ export class Table
 
     public tableNameSingularCamel():string
     {
-        return toCamelCase(this.tableNameSingular());
+        return ChangeCase.camel(this.tableNameSingular());
     }
 
     public tableNamePascal():string
@@ -398,7 +398,7 @@ export class Reference {
 
     public primaryTableNameCamel():string
     {
-        return toCamelCase(this.primaryTableName);
+        return ChangeCase.camel(this.primaryTableName);
     }
 
     public primaryTableNameModel():string {
@@ -406,7 +406,7 @@ export class Reference {
     }
     public foreignTableNameCamel():string
     {
-        return toCamelCase(this.foreignTableName);
+        return ChangeCase.camel(this.foreignTableName);
     }
 
     associationNameQuoted():string {
@@ -440,12 +440,12 @@ export class Xref {
 
     public firstTableNameCamel():string
     {
-        return toCamelCase(this.firstTableName);
+        return ChangeCase.camel(this.firstTableName);
     }
 
     public secondTableNameCamel():string
     {
-        return toCamelCase(this.secondTableName);
+        return ChangeCase.camel(this.secondTableName);
     }
 
 }
@@ -735,7 +735,7 @@ export function read(database:string, username:string, password:string, options:
                 true));
 
             // TODO this can't be correct that we're calculating what the primary key is called?
-            var primaryKeyName = util.camelCase(Sequelize.Utils.singularize(row.referenced_table_name)) + toTitleCase(Schema.idSuffix);
+            var primaryKeyName = util.camelCase(Sequelize.Utils.singularize(row.referenced_table_name)) + ChangeCase.titleCase(Schema.idSuffix);
             // tell Sequelize about the reference
             schema.references.push(new Reference(
                                             row.referenced_table_name,
@@ -991,12 +991,4 @@ export function read(database:string, username:string, password:string, options:
             }
         }
     }
-}
-
-function toTitleCase(text:string):string {
-    return text.charAt(0).toUpperCase() + text.substr(1, text.length - 1);
-}
-
-function toCamelCase(text:string):string {
-    return text.charAt(0).toLowerCase() + text.substr(1);
 }
