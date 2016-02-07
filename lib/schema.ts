@@ -15,7 +15,43 @@ import _ = require('lodash');
 import ChangeCase = require('change-case');
 
 const DEFAULT_CASE_TYPE = 'case';
-var naming:any;
+
+
+interface INaming {
+    defaults: {
+        caseType: string;
+    };
+    associationName: {
+        tail: string;
+        caseType: string;
+    };
+    methodName: {
+        caseType: string;
+    }
+    getterName: {
+        caseType: string;
+    };
+}
+
+
+export interface GenerateOptions
+{
+    database:string;
+    username:string;
+    password:string;
+    options:sequelize.Options;
+    schemaOptions: ISchemaOptions;
+    modelFactory?:boolean;
+
+    targetDirectory:string;
+}
+
+
+export interface ISchemaOptions {
+    excludeTables: string[];
+    naming: INaming;
+}
+
 
 export class Schema {
 
@@ -29,9 +65,7 @@ export class Schema {
     public idFields:Field[] = [];
     public idFieldLookup:util.Dictionary<boolean> = {};
 
-    public useModelFactory:boolean = false;
-
-    constructor(public tables:Table[])
+    constructor(public tables:Table[], private schemaOptions:ISchemaOptions, public useModelFactory:boolean)
     {
 
     }
@@ -150,7 +184,8 @@ export class Schema {
                                             pk.fieldName,
                                             pk.fieldName,
                                             false,
-                                            this);
+                                            this,
+                                            this.schemaOptions);
             u.push(r);
         }
     }
@@ -161,30 +196,30 @@ export class Table
     fields:Field[] = [];
     isView:boolean = false;
 
-    constructor(public schema:Schema, public tableName:string)
+    constructor(public schema:Schema, public tableName:string, private schemaOptions:ISchemaOptions)
     {
 
     }
 
     pojoName():string {
         var name:string = ChangeCase.snake(this.tableName) + '_pojo';
-        return ChangeCase[naming.defaults.caseType](name);
+        return ChangeCase[this.schemaOptions.naming.defaults.caseType](name);
     }
     instanceTypeName():string {
         var name:string = ChangeCase.snake(this.tableName) + '_instance';
-        return ChangeCase[naming.defaults.caseType](name);
+        return ChangeCase[this.schemaOptions.naming.defaults.caseType](name);
     }
     modelTypeName():string {
         var name:string = ChangeCase.snake(this.tableName) + '_model';
-        return ChangeCase[naming.defaults.caseType](name);
+        return ChangeCase[this.schemaOptions.naming.defaults.caseType](name);
     }
     assertValidMethodName():string {
         var name:string = 'assert_valid_' + ChangeCase.snake(this.tableName);
-        return ChangeCase[naming.methodName.caseType](name);
+        return ChangeCase[this.schemaOptions.naming.methodName.caseType](name);
     }
     getterName():string {
         var name:string = 'get_' + ChangeCase.snake(this.tableName);
-        var type:string = _.has(naming, 'getterName.caseType') ? naming.getterName.caseType : naming.defaults.caseType;
+        var type:string = _.has(this.schemaOptions.naming, 'getterName.caseType') ? this.schemaOptions.naming.getterName.caseType : this.schemaOptions.naming.defaults.caseType;
         return ChangeCase[type](name);
     }
 
@@ -243,7 +278,7 @@ export class Field
 {
     public targetIdFieldType:string; // if this is a prefixed foreign key, then the name of the non-prefixed key is here
 
-    constructor(public fieldName:string, public fieldType:string, public columnType:string, public columnDefault:string, public isNullable:boolean, public table:Table, public isReference:boolean = false, public isCalculated:boolean = false)
+    constructor(public fieldName:string, public fieldType:string, public columnType:string, public columnDefault:string, public isNullable:boolean, public table:Table, private schemaOptions:ISchemaOptions, public isReference:boolean = false, public isCalculated:boolean = false)
     {
     }
 
@@ -262,7 +297,7 @@ export class Field
 
     fieldNameProperCase():string
     {
-        var fieldName:string = ChangeCase[naming.defaults.caseType](this.fieldName);
+        var fieldName:string = ChangeCase[this.schemaOptions.naming.defaults.caseType](this.fieldName);
         return fieldName;
     }
 
@@ -380,20 +415,21 @@ export class Reference {
                 public primaryKey:string,
                 public foreignKey:string,
                 public isView:boolean,
-                private schema:Schema) {
+                private schema:Schema,
+                private schemaOptions:ISchemaOptions) {
 
     }
 
     public primaryTableModelName():string
     {
         var name:string = ChangeCase.snake(this.primaryTableName) + '_model';
-        return ChangeCase[naming.defaults.caseType](name);
+        return ChangeCase[this.schemaOptions.naming.defaults.caseType](name);
     }
 
     public foreignTableModelName():string
     {
         var name:string = ChangeCase.snake(this.foreignTableName) + '_model';
-        return ChangeCase[naming.defaults.caseType](name);
+        return ChangeCase[this.schemaOptions.naming.defaults.caseType](name);
     }
 
     public primaryTableNameCamel():string
@@ -422,20 +458,21 @@ export class Xref {
                 public firstFieldName:string,
                 public secondTableName:string,
                 public secondFieldName:string,
-                public xrefTableName:string) {
+                public xrefTableName:string,
+                private schemaOptions:ISchemaOptions) {
 
     }
 
     public firstTableModelName():string
     {
         var name:string = ChangeCase.snake(this.firstTableName) + '_model';
-        return ChangeCase[naming.defaults.caseType](name);
+        return ChangeCase[this.schemaOptions.naming.defaults.caseType](name);
     }
 
     public secondTableModelName():string
     {
         var name:string = ChangeCase.snake(this.secondTableName) + '_model';
-        return ChangeCase[naming.defaults.caseType](name);
+        return ChangeCase[this.schemaOptions.naming.defaults.caseType](name);
     }
 
     public firstTableNameCamel():string
@@ -484,23 +521,39 @@ interface CustomFieldDefinitionRow extends ColumnDefinitionRow, ReferenceDefinit
  * duplicateRows may have type T[][]|T[]
  */
 function deDupRows<T>(duplicateRows: any): T[] {
-  console.log('deDupRows recieved: ', JSON.stringify(duplicateRows));
-  console.trace();
+    // TODO remove logging calls
+    console.log('deDupRows recieved: ', JSON.stringify(duplicateRows));
+    console.trace();
 
-  var rows: T[] = duplicateRows;
-  if(duplicateRows && duplicateRows.length == 2 && (duplicateRows[0] instanceof Array)) rows = duplicateRows[0];
-  return rows;
+    var rows: T[] = duplicateRows;
+    if(duplicateRows && duplicateRows.length == 2 && (duplicateRows[0] instanceof Array)) rows = duplicateRows[0];
+    return rows;
 }
 
 
-export function read(database:string, username:string, password:string, options:sequelize.Options, namingOptions:any, callback:(err:Error, schema:Schema) => void):void
+interface IRowFn<T> {
+    (rows: T[]): T[];
+}
+
+
+interface IRow {
+    table_name: string;
+}
+
+
+export function read(allOptions: GenerateOptions, callback:(err:Error, schema:Schema) => void):void
 {
-    naming = namingOptions || {};
-    naming.defaults = naming.defaults || {};
+    var schemaOptions = allOptions.schemaOptions;
+    var naming = schemaOptions.naming;
     naming.defaults.caseType = naming.defaults.caseType || DEFAULT_CASE_TYPE;
 
     var schema:Schema;
-    var sequelize:sequelize.Sequelize = new Sequelize(database, username, password, options);
+    var database = allOptions.database;
+    var sequelize:sequelize.Sequelize = new Sequelize(
+        database,
+        allOptions.username,
+        allOptions.password,
+        allOptions.options);
     var tableLookup:util.Dictionary<Table> = {};
     var xrefs:util.Dictionary<Xref> = {};
     var associationsFound:util.Dictionary<boolean> = {};
@@ -513,9 +566,14 @@ export function read(database:string, username:string, password:string, options:
         "where table_schema = '" + database + "' " +
         "order by table_name, ordinal_position";
 
+    function filterRows<T extends IRow>(rows: T[]): T[] {
+      return _.filter(rows, (row) => !_.contains(schemaOptions.excludeTables, row.table_name));
+    }
+
     sequelize
         .query(sql)
         .then(deDupRows)
+        .then(filterRows)
         .then(processTablesAndColumns)
         .catch((err)=>callback(err, null));
 
@@ -554,6 +612,7 @@ export function read(database:string, username:string, password:string, options:
             .query(sql)
             // Do we not get the nested duplicate arrays?  The previous code just called processCustomFields with customFields not customFields[0]
             .then(deDupRows)
+            .then(filterRows)
             .then(processCustomFields)
             .catch((err)=>callback(err, null));
 
@@ -587,9 +646,9 @@ export function read(database:string, username:string, password:string, options:
     function processTablesAndColumnsWithCustom(rows:ColumnDefinitionRow[], customFieldLookup:util.Dictionary<ColumnDefinitionRow>):void {
 
         var tables:Table[] = [];
-        schema = new Schema(tables);
+        schema = new Schema(tables, schemaOptions, allOptions.modelFactory);
 
-        var table:Table = new Table(schema, "");
+        var table:Table = new Table(schema, "", schemaOptions);
 
         var calculatedFieldsFound:_.Dictionary<boolean> = {};
 
@@ -603,13 +662,22 @@ export function read(database:string, username:string, password:string, options:
 
             if (row.table_name != table.tableName)
             {
-                table = new Table(schema, row.table_name);
+                table = new Table(schema, row.table_name, schemaOptions);
                 tables.push(table);
             }
 
             var isCalculated:boolean = customFieldLookup[row.column_name] !== undefined;
 
-            var field:Field = new Field(row.column_name, row.data_type, row.column_type, row.column_default, row.is_nullable === 'YES', table, false, isCalculated);
+            var field:Field = new Field(
+                row.column_name,
+                row.data_type,
+                row.column_type,
+                row.column_default,
+                row.is_nullable === 'YES',
+                table,
+                schemaOptions,
+                false,
+                isCalculated);
             table.fields.push(field);
 
             if (isCalculated && !calculatedFieldsFound[field.fieldName]) {
@@ -634,6 +702,7 @@ export function read(database:string, username:string, password:string, options:
         sequelize
             .query(sql)
             .then(deDupRows)
+            .then(filterRows)
             .then(processReferences)
             .catch((err)=>callback(err, null));
     }
@@ -732,6 +801,7 @@ export function read(database:string, username:string, password:string, options:
                 undefined,
                 undefined,
                 childTable,
+                schemaOptions,
                 true));
 
             // TODO this can't be correct that we're calculating what the primary key is called?
@@ -744,7 +814,8 @@ export function read(database:string, username:string, password:string, options:
                                             primaryKeyName,
                                             row.column_name,
                                             false,
-                                            schema));
+                                            schema,
+                                            schemaOptions));
         }
 
         function processReferenceXrefRow(row:ReferenceDefinitionRow):void {
@@ -756,7 +827,8 @@ export function read(database:string, username:string, password:string, options:
                                                     row.referenced_column_name,
                                                     null,
                                                     null,
-                                                    row.table_name);
+                                                    row.table_name,
+                                                    schemaOptions);
             } else {
                 xref.secondTableName = row.referenced_table_name;
                 xref.secondFieldName = row.referenced_column_name;
@@ -784,6 +856,7 @@ export function read(database:string, username:string, password:string, options:
                     undefined,
                     undefined,
                     firstTable,
+                    schemaOptions,
                     true));
 
                 secondTable.fields.push(new Field(
@@ -793,6 +866,7 @@ export function read(database:string, username:string, password:string, options:
                     undefined,
                     undefined,
                     secondTable,
+                    schemaOptions,
                     true));
 
             }
@@ -883,7 +957,8 @@ export function read(database:string, username:string, password:string, options:
                                                     field.fieldName,
                                                     field.fieldName,
                                                     true,
-                                                    schema);
+                                                    schema,
+                                                    schemaOptions);
 
             schema.references.push(reference);
 
@@ -896,6 +971,7 @@ export function read(database:string, username:string, password:string, options:
                 undefined,
                 undefined,
                 view,
+                schemaOptions,
                 true));
 
             otherTable.fields.push(new Field(
@@ -905,6 +981,7 @@ export function read(database:string, username:string, password:string, options:
                 undefined,
                 undefined,
                 otherTable,
+                schemaOptions,
                 true));
 
         }

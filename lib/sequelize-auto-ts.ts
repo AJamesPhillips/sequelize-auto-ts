@@ -12,24 +12,13 @@ var Sequelize:sequelize.SequelizeStatic = require("sequelize");
 
 var targetProjectRootDirectory:string = null;
 
-export interface GenerateOptions
-{
-    database:string;
-    username:string;
-    password:string;
-    options:sequelize.Options;
-    naming:any;
-    modelFactory?:boolean;
-
-    targetDirectory:string;
-}
-export function generate(options:GenerateOptions, callback?:(err:Error) => void):void {
+export function generate(options:schema.GenerateOptions, callback?:(err:Error) => void):void {
     if (callback == undefined) {
         callback = function (err:Error):void {
         };
     }
 
-    schema.read(options.database, options.username, options.password, options.options, options.naming,
+    schema.read(options,
         function (err:Error, schema:schema.Schema) {
             if (err) {
                 callback(err);
@@ -40,10 +29,8 @@ export function generate(options:GenerateOptions, callback?:(err:Error) => void)
         });
 }
 
-function generateTypes(options:GenerateOptions, schema:schema.Schema, callback:(err:Error) => void):void
+function generateTypes(options:schema.GenerateOptions, schema:schema.Schema, callback:(err:Error) => void):void
 {
-    schema.useModelFactory = options.modelFactory;
-
     generateFromTemplate(options, schema, "sequelize-types.ts", function(err:Error) {
         generateFromTemplate(options, schema, "sequelize-names.ts", function(err:Error) {
             var template:string = options.modelFactory ? "sequelize-model-factory.ts" : "sequelize-models.ts";
@@ -52,7 +39,7 @@ function generateTypes(options:GenerateOptions, schema:schema.Schema, callback:(
     });
 }
 
-function generateFromTemplate(options:GenerateOptions, schema:schema.Schema, templateName:string, callback:(err:Error) => void):void
+function generateFromTemplate(options:schema.GenerateOptions, schema:schema.Schema, templateName:string, callback:(err:Error) => void):void
 {
     console.log("Generating " + templateName);
 
@@ -68,7 +55,7 @@ function generateFromTemplate(options:GenerateOptions, schema:schema.Schema, tem
     callback(null);
 }
 
-function translateReferences(source:string, options:GenerateOptions):string
+function translateReferences(source:string, options:schema.GenerateOptions):string
 {
     var re:RegExp = new RegExp("///\\s+<reference\\s+path=[\"'][\\./\\w\\-\\d]+?([\\w\\.\\-]+)[\"']\\s*/>", "g");
 
@@ -103,7 +90,7 @@ function translateReferences(source:string, options:GenerateOptions):string
     return source.replace(re, replaceFileName);
 }
 
-function findTargetProjectRootDirectory(options:GenerateOptions):string
+function findTargetProjectRootDirectory(options:schema.GenerateOptions):string
 {
     var dir:string = options.targetDirectory;
 
