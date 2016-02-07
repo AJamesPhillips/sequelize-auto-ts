@@ -24,14 +24,14 @@ export class Schema {
     public references:Reference[] = [];
     public xrefs:Xref[] = [];
     public associations:Association[] = [];
-    public calculatedFields:Array<Field> = [];
+    public calculatedFields:Field[] = [];
     public views:Table[] = [];
     public idFields:Field[] = [];
     public idFieldLookup:util.Dictionary<boolean> = {};
 
     public useModelFactory:boolean = false;
 
-    constructor(public tables:Array<Table>)
+    constructor(public tables:Table[])
     {
 
     }
@@ -158,7 +158,7 @@ export class Schema {
 
 export class Table
 {
-    fields:Array<Field> = [];
+    fields:Field[] = [];
     isView:boolean = false;
 
     constructor(public schema:Schema, public tableName:string)
@@ -504,7 +504,7 @@ export function read(database:string, username:string, password:string, options:
         .then((rows)=>processTablesAndColumns(undefined, rows[0]))
         .catch((err)=>processTablesAndColumns(err, null));
 
-    function processTablesAndColumns(err:Error, rows:Array<ColumnDefinitionRow>):void
+    function processTablesAndColumns(err:Error, rows:ColumnDefinitionRow[]):void
     {
         if (err)
         {
@@ -580,7 +580,7 @@ export function read(database:string, username:string, password:string, options:
 
     function processTablesAndColumnsWithCustom(rows:ColumnDefinitionRow[], customFieldLookup:util.Dictionary<ColumnDefinitionRow>):void {
 
-        var tables:Array<Table> = [];
+        var tables:Table[] = [];
         schema = new Schema(tables);
 
         var table:Table = new Table(schema, "");
@@ -631,7 +631,7 @@ export function read(database:string, username:string, password:string, options:
             .catch((err)=>processReferences(err, null));
     }
 
-    function processReferences(err:Error, rows:Array<ReferenceDefinitionRow>):void
+    function processReferences(err:Error, rows:ReferenceDefinitionRow[]):void
     {
         if (err)
         {
@@ -913,7 +913,7 @@ export function read(database:string, username:string, password:string, options:
             return;
         }
 
-        var idFields:Array<Field> = [];
+        var idFields:Field[] = [];
 
         var idSuffixLen:number = idSuffix.length;
 

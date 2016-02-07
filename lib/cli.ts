@@ -22,7 +22,7 @@ else
 
 function processFromCommandLines()
 {
-    var args:Array<string> = process.argv.slice(2);
+    var args:string[] = process.argv.slice(2);
     var modelFactory:boolean = false;
 
     var i = args.indexOf('-mf');
