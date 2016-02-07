@@ -1,6 +1,7 @@
 /// <reference path='../typings/node/node.d.ts' />
 
 import generator = require('../lib/sequelize-auto-ts');
+import Schema = require('../lib/schema');
 import fs = require('fs');
 import path = require('path');
 var prompt = require('prompt');
@@ -23,11 +24,11 @@ prompt.get(schema, function(err, result)
     result.targetDirectory = path.join(__dirname, 'mysql-world-generated');
 
 
-    generate(<generator.GenerateOptions>result);
+    generate(<Schema.GenerateOptions>result);
 
 });
 
-function generate(options:generator.GenerateOptions):void
+function generate(options:Schema.GenerateOptions):void
 {
     console.log('Database: ' + options.database);
     console.log('Username: ' + options.username);

@@ -1,28 +1,11 @@
-////////////////////////////////////////////////////////////////////
-//
-// GENERATED CLASS
-//
-// DO NOT EDIT
-//
-// See template-definitions.ts for edits
-//
-////////////////////////////////////////////////////////////////////
 var Sequelize = require('sequelize');
-
 exports.initialized = false;
-
-exports.city;
-exports.country;
-exports.countrylanguage;
-
 function initialize(database, username, password, options) {
     var _this = this;
     if (exports.initialized) {
         return;
     }
-
     var sequelize = new Sequelize(database, username, password, options);
-
     exports.city = sequelize.define('city', {
         'ID': 'number',
         'Name': 'string',
@@ -53,7 +36,6 @@ function initialize(database, username, password, options) {
             }
         }
     });
-
     exports.country = sequelize.define('country', {
         'Code': 'string',
         'Name': 'string',
@@ -124,7 +106,6 @@ function initialize(database, username, password, options) {
             }
         }
     });
-
     exports.countrylanguage = sequelize.define('countrylanguage', {
         'CountryCode': 'string',
         'Language': 'string',
@@ -153,4 +134,3 @@ function initialize(database, username, password, options) {
     });
 }
 exports.initialize = initialize;
-//# sourceMappingURL=sequelize-models.js.map
