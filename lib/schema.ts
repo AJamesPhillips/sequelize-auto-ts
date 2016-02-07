@@ -276,6 +276,8 @@ export class Table
 
 export class Field
 {
+    // TODO: what does `this` refer to in the comment below, the field value of targetIdFieldType
+    //       or something else?
     public targetIdFieldType:string; // if this is a prefixed foreign key, then the name of the non-prefixed key is here
 
     constructor(public fieldName:string, public fieldType:string, public columnType:string, public columnDefault:string, public isNullable:boolean, public table:Table, private schemaOptions:ISchemaOptions, public isReference:boolean = false, public isCalculated:boolean = false)
@@ -340,7 +342,7 @@ export class Field
     }
 
     isIdField():boolean {
-        return this.targetIdFieldType != undefined || Boolean(this.table.schema.idFieldLookup[this.fieldName]);
+        return this.targetIdFieldType != undefined || this.table.schema.idFieldLookup[this.fieldName];
     }
 
     customFieldType():string
@@ -523,7 +525,6 @@ interface CustomFieldDefinitionRow extends ColumnDefinitionRow, ReferenceDefinit
 function deDupRows<T>(duplicateRows: any): T[] {
     // TODO remove logging calls
     console.log('deDupRows recieved: ', JSON.stringify(duplicateRows));
-    console.trace();
 
     var rows: T[] = duplicateRows;
     if(duplicateRows && duplicateRows.length == 2 && (duplicateRows[0] instanceof Array)) rows = duplicateRows[0];
