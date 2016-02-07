@@ -681,7 +681,7 @@ export function read(database:string, username:string, password:string, options:
             var parentTable = tableLookup[row.referenced_table_name];
             var childTable = tableLookup[row.table_name];
 
-            var associationName:string;
+            var associationName:string =  row.referenced_table_name;
 
             if (row.column_name !== row.referenced_column_name) {
 
@@ -690,12 +690,13 @@ export function read(database:string, username:string, password:string, options:
                 // so we take first character and make it uppercase,
                 // then take rest of prefix from foreign key
                 // then append the referenced table name
-                associationName = ChangeCase.snake(row.column_name);
-                associationName = row.column_name.slice(0, (row.referenced_column_name.length + 1) * -1);
-                if (_.has(naming, 'associationName.tail') && naming.associationName.tail!==null) {
-                    if (naming.associationName.tail==='tableName') {
-                        associationName += '_' + row.referenced_table_name;
-                    }
+
+                // TODO
+                // This made no sense.  If row.referenced_column_name is 'id' (which it
+                // often will be) then associationName would become 'ownerUse'.
+                associationName = row.column_name;//.slice(0, (row.referenced_column_name.length + 1) * -1);
+                if (_.has(naming, 'associationName.tail') && naming.associationName.tail!=='tableName') {
+                    associationName += '_' + row.referenced_table_name;
                 }
                 if (_.has(naming, 'associationName.caseType')) {
                     associationName = ChangeCase[naming.associationName.caseType](associationName);
@@ -720,24 +721,27 @@ export function read(database:string, username:string, password:string, options:
             // }
 
             // create singular parent reference from child
+            // ownerUserId -> OwnerUsers -> ownerUser
+            var singularParentAssociationName = util.camelCase(Sequelize.Utils.singularize(associationName));
+            // Accounts -> AccountPojo
+            var singularParentAssociationPojoName = ChangeCase[naming.defaults.caseType](ChangeCase.snake(row.referenced_table_name) + '_pojo')
             childTable.fields.push(new Field(
-                util.camelCase(Sequelize.Utils.singularize(
-                        associationName === undefined
-                            ? row.referenced_table_name                             // Accounts -> account
-                            : associationName)),                                    // ownerUserId -> OwnerUsers -> ownerUser
-                ChangeCase[naming.defaults.caseType](ChangeCase.snake(row.referenced_table_name) + '_pojo'),    // Accounts -> AccountPojo
+                singularParentAssociationName,
+                singularParentAssociationPojoName,
                 undefined,
                 undefined,
                 undefined,
                 childTable,
                 true));
 
+            // TODO this can't be correct that we're calculating what the primary key is called?
+            var primaryKeyName = util.camelCase(Sequelize.Utils.singularize(row.referenced_table_name)) + toTitleCase(Schema.idSuffix);
             // tell Sequelize about the reference
             schema.references.push(new Reference(
                                             row.referenced_table_name,
                                             row.table_name,
                                             associationName,
-                                            util.camelCase(Sequelize.Utils.singularize(row.referenced_table_name)) + toTitleCase(Schema.idSuffix),
+                                            primaryKeyName,
                                             row.column_name,
                                             false,
                                             schema));
