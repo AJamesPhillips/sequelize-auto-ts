@@ -1009,11 +1009,13 @@ export function read(allOptions: GenerateOptions, callback:(err:Error, schema:Sc
                 continue;
             }
 
+            // IDEA of TODO:  instead, iterate through all fields and add if they have a primary or
+            // compound key.  Will need to modify the sql statements above to expose this.
             var field:Field = table.fields[0];
             var fieldName:string = field.fieldName;
 
             if (!idFieldLookup[fieldName] &&
-                fieldName.length > idSuffixLen &&
+                fieldName.length >= idSuffixLen &&
                 fieldName.substr(fieldName.length - idSuffixLen, idSuffixLen).toLocaleLowerCase() == idSuffix)
             {
                 idFields.push(field);
