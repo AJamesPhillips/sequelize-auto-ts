@@ -9,9 +9,10 @@
 ////////////////////////////////////////////////////////////////////
 
 /// <reference path='../typings/node/node.d.ts' />
-/// <reference path='./sequelize.d.ts' />
+/// <reference path='../typings/sequelize/sequelize.d.ts' />
 
 import types = require('./sequelize-types');
+import sequelize = require('sequelize');
 
 var Sequelize:sequelize.SequelizeStatic = require('sequelize');
 
@@ -68,8 +69,8 @@ export class Models {
 
         /*__startEach__ xrefs */
 
-        this.__firstTableNameCamel__.hasMany(this.__secondTableNameCamel__, {through: '__xrefTableName__'});
-        this.__secondTableNameCamel__.hasMany(this.__firstTableNameCamel__, {through: '__xrefTableName__'});
+        this.__firstTableNameCamel__.belongsToMany(this.__secondTableNameCamel__, {through: '__xrefTableName__'});
+        this.__secondTableNameCamel__.belongsToMany(this.__firstTableNameCamel__, {through: '__xrefTableName__'});
 
         /*__endEach__*/
     }
