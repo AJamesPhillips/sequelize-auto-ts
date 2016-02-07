@@ -10,24 +10,22 @@
 
 /// <reference path="../typings/tsd.d.ts" />
 
-import sequelize = require('sequelize');
+import Sequelize = require('sequelize');
 import types = require('./sequelize-types');
 
-var Sequelize:sequelize.SequelizeStatic = require('sequelize');
-
 export var initialized:boolean = false;
-export var SEQUELIZE:sequelize.Sequelize;
+export var SEQUELIZE:Sequelize.Sequelize;
 
 /*__each__ tables */ export var __modelTypeName__:types.__modelTypeName__;
 
 /*__ignore__*/ var __defineFieldType__;
-/*__ignore__*/ var __primaryTableModelName__:sequelize.Model<any, any>;
-/*__ignore__*/ var __foreignTableModelName__:sequelize.Model<any, any>;
-/*__ignore__*/ var __firstTableModelName__:sequelize.Model<any, any>;
-/*__ignore__*/ var __secondTableModelName__:sequelize.Model<any, any>;
+/*__ignore__*/ var __primaryTableModelName__:Sequelize.Model<any, any>;
+/*__ignore__*/ var __foreignTableModelName__:Sequelize.Model<any, any>;
+/*__ignore__*/ var __firstTableModelName__:Sequelize.Model<any, any>;
+/*__ignore__*/ var __secondTableModelName__:Sequelize.Model<any, any>;
 /*__ignore__*/ var __associationNameQuoted__:string;
 
-export function initialize(database:string, username:string, password:string, options:sequelize.Options):any
+export function initialize(database:string, username:string, password:string, options:Sequelize.Options):any
 {
     if (initialized)
     {

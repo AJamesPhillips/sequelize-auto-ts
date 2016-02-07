@@ -12,25 +12,25 @@
 /// <reference path='../typings/sequelize/sequelize.d.ts' />
 
 import types = require('./sequelize-types');
-import sequelize = require('sequelize');
+import Sequelize = require('sequelize');
 
-var Sequelize:sequelize.SequelizeStatic = require('sequelize');
+
 
 /*__ignore__*/ var __defineFieldType__;
 /*__ignore__*/ var __associationNameQuoted__:string;
 
 export class Models {
 
-    public SEQUELIZE:sequelize.Sequelize;
+    public SEQUELIZE:Sequelize.Sequelize;
 
     /*__each__ tables */ public __tableNameCamel__:types.__modelTypeName__;
 
-    /*__ignore__*/ __primaryTableNameCamel__:sequelize.Model<any, any>;
-    /*__ignore__*/ __foreignTableNameCamel__:sequelize.Model<any, any>;
-    /*__ignore__*/ __firstTableNameCamel__:sequelize.Model<any, any>;
-    /*__ignore__*/ __secondTableNameCamel__:sequelize.Model<any, any>;
+    /*__ignore__*/ __primaryTableNameCamel__:Sequelize.Model<any, any>;
+    /*__ignore__*/ __foreignTableNameCamel__:Sequelize.Model<any, any>;
+    /*__ignore__*/ __firstTableNameCamel__:Sequelize.Model<any, any>;
+    /*__ignore__*/ __secondTableNameCamel__:Sequelize.Model<any, any>;
 
-    constructor(database:string, username:string, password:string, options:sequelize.Options) {
+    constructor(database:string, username:string, password:string, options:Sequelize.Options) {
 
         this.SEQUELIZE = new Sequelize(database, username, password, options);
         var self:Models = this;
@@ -84,7 +84,7 @@ interface ModelCache {
 
 var modelsCache:{[key:string]: ModelCache} = {};
 
-export function forDatabase(database:string, username?:string, password?:string, options?:sequelize.Options):Models {
+export function forDatabase(database:string, username?:string, password?:string, options?:Sequelize.Options):Models {
 
     var cache:ModelCache = modelsCache[database];
     if (cache !== undefined) {
