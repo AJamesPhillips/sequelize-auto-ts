@@ -252,6 +252,8 @@ export class Field
             this.isNullable ||
             /(_at)|(At)$/.test(this.fieldName) ||
             (!_.isNull(this.columnDefault) && !_.isUndefined(this.columnDefault)) ||
+            // TODO, remove?  This seems a very brittle convention.  What about fields named uuid,
+            //                or ID, or other fields used for uniqueness like an email address?
             this.fieldName==='id' ||
             this.isReference
         );
@@ -351,6 +353,8 @@ export class Field
         var raw = this.columnDefault;
         if (this.fieldType==='tinyint') {
             raw = (raw==='1') ? 'true' : 'false';
+        // This regex will only allow values of 1 or more, this the intended behaviour?
+        // Otherwise I think we'd want /^(?:[0-9])|(?:[1-9][0-9]*)$/
         } else if (_.isString(raw) && !/^[1-9][0-9]*$/.test(raw)) {
             raw = `"${raw}"`;
         }
