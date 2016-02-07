@@ -479,6 +479,20 @@ interface CustomFieldDefinitionRow extends ColumnDefinitionRow, ReferenceDefinit
 
 }
 
+
+/**
+ * duplicateRows may have type T[][]|T[]
+ */
+function deDupRows<T>(duplicateRows: any): T[] {
+  console.log('deDupRows recieved: ', JSON.stringify(duplicateRows));
+  console.trace();
+
+  var rows: T[] = duplicateRows;
+  if(duplicateRows && duplicateRows.length == 2 && (duplicateRows[0] instanceof Array)) rows = duplicateRows[0];
+  return rows;
+}
+
+
 export function read(database:string, username:string, password:string, options:sequelize.Options, namingOptions:any, callback:(err:Error, schema:Schema) => void):void
 {
     naming = namingOptions || {};
@@ -501,17 +515,12 @@ export function read(database:string, username:string, password:string, options:
 
     sequelize
         .query(sql)
-        .then((rows)=>processTablesAndColumns(undefined, rows[0]))
-        .catch((err)=>processTablesAndColumns(err, null));
+        .then(deDupRows)
+        .then(processTablesAndColumns)
+        .catch((err)=>callback(err, null));
 
-    function processTablesAndColumns(err:Error, rows:ColumnDefinitionRow[]):void
+    function processTablesAndColumns(rows:ColumnDefinitionRow[]):void
     {
-        if (err)
-        {
-            callback(err, null);
-            return;
-        }
-
         if (rows == null)
         {
             var err:Error = new Error("No schema info returned for database.");
@@ -543,15 +552,12 @@ export function read(database:string, username:string, password:string, options:
 
         sequelize
             .query(sql)
-            .then((customFields)=>processCustomFields(undefined, customFields))
-            .catch((err)=>processCustomFields(err, null));
+            // Do we not get the nested duplicate arrays?  The previous code just called processCustomFields with customFields not customFields[0]
+            .then(deDupRows)
+            .then(processCustomFields)
+            .catch((err)=>callback(err, null));
 
-        function processCustomFields(err:Error, customFields:CustomFieldDefinitionRow[]):void {
-
-            if (err) {
-                callback(err, null);
-                return;
-            }
+        function processCustomFields(customFields:CustomFieldDefinitionRow[]):void {
 
             var customFieldLookup:util.Dictionary<ColumnDefinitionRow> =
                     util.arrayToDictionary(customFields,'column_name');
@@ -627,17 +633,13 @@ export function read(database:string, username:string, password:string, options:
 
         sequelize
             .query(sql)
-            .then((rows)=>processReferences(undefined, rows[0]))
-            .catch((err)=>processReferences(err, null));
+            .then(deDupRows)
+            .then(processReferences)
+            .catch((err)=>callback(err, null));
     }
 
-    function processReferences(err:Error, rows:ReferenceDefinitionRow[]):void
+    function processReferences(rows:ReferenceDefinitionRow[]):void
     {
-        if (err)
-        {
-            callback(err, null);
-            return;
-        }
 
         if (rows == null || rows.length == 0)
         {
